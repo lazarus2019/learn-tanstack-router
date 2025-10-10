@@ -13,12 +13,16 @@ import { Route as TestRouteImport } from './routes/test'
 import { Route as PppRouteImport } from './routes/ppp'
 import { Route as HelloRouteImport } from './routes/hello'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as PostRouteRouteImport } from './routes/post/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as ContentIndexRouteImport } from './routes/content/index'
 import { Route as PostsDetailRouteImport } from './routes/posts.detail'
 import { Route as ContentContentIdRouteImport } from './routes/content/$contentId'
 import { Route as LocaleAboutRouteImport } from './routes/$locale/about'
+import { Route as PostPostPathlessLayoutRouteRouteImport } from './routes/post/_postPathlessLayout/route'
+import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
+import { Route as PostPostPathlessLayoutTestRouteImport } from './routes/post/_postPathlessLayout/test'
 
 const TestRoute = TestRouteImport.update({
   id: '/test',
@@ -38,6 +42,11 @@ const HelloRoute = HelloRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PostRouteRoute = PostRouteRouteImport.update({
+  id: '/post',
+  path: '/post',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -70,9 +79,26 @@ const LocaleAboutRoute = LocaleAboutRouteImport.update({
   path: '/$locale/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostPostPathlessLayoutRouteRoute =
+  PostPostPathlessLayoutRouteRouteImport.update({
+    id: '/_postPathlessLayout',
+    getParentRoute: () => PostRouteRoute,
+  } as any)
+const PostPostIdIndexRoute = PostPostIdIndexRouteImport.update({
+  id: '/$postId/',
+  path: '/$postId/',
+  getParentRoute: () => PostRouteRoute,
+} as any)
+const PostPostPathlessLayoutTestRoute =
+  PostPostPathlessLayoutTestRouteImport.update({
+    id: '/test',
+    path: '/test',
+    getParentRoute: () => PostPostPathlessLayoutRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/post': typeof PostPostPathlessLayoutRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/hello': typeof HelloRoute
   '/ppp': typeof PppRoute
@@ -82,9 +108,12 @@ export interface FileRoutesByFullPath {
   '/posts/detail': typeof PostsDetailRoute
   '/content': typeof ContentIndexRoute
   '/posts': typeof PostsIndexRoute
+  '/post/test': typeof PostPostPathlessLayoutTestRoute
+  '/post/$postId': typeof PostPostIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/post': typeof PostPostPathlessLayoutRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/hello': typeof HelloRoute
   '/ppp': typeof PppRoute
@@ -94,24 +123,31 @@ export interface FileRoutesByTo {
   '/posts/detail': typeof PostsDetailRoute
   '/content': typeof ContentIndexRoute
   '/posts': typeof PostsIndexRoute
+  '/post/test': typeof PostPostPathlessLayoutTestRoute
+  '/post/$postId': typeof PostPostIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/post': typeof PostRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/hello': typeof HelloRoute
   '/ppp': typeof PppRoute
   '/test': typeof TestRoute
+  '/post/_postPathlessLayout': typeof PostPostPathlessLayoutRouteRouteWithChildren
   '/$locale/about': typeof LocaleAboutRoute
   '/content/$contentId': typeof ContentContentIdRoute
   '/posts/detail': typeof PostsDetailRoute
   '/content/': typeof ContentIndexRoute
   '/posts/': typeof PostsIndexRoute
+  '/post/_postPathlessLayout/test': typeof PostPostPathlessLayoutTestRoute
+  '/post/$postId/': typeof PostPostIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/post'
     | '/about'
     | '/hello'
     | '/ppp'
@@ -121,9 +157,12 @@ export interface FileRouteTypes {
     | '/posts/detail'
     | '/content'
     | '/posts'
+    | '/post/test'
+    | '/post/$postId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/post'
     | '/about'
     | '/hello'
     | '/ppp'
@@ -133,22 +172,29 @@ export interface FileRouteTypes {
     | '/posts/detail'
     | '/content'
     | '/posts'
+    | '/post/test'
+    | '/post/$postId'
   id:
     | '__root__'
     | '/'
+    | '/post'
     | '/about'
     | '/hello'
     | '/ppp'
     | '/test'
+    | '/post/_postPathlessLayout'
     | '/$locale/about'
     | '/content/$contentId'
     | '/posts/detail'
     | '/content/'
     | '/posts/'
+    | '/post/_postPathlessLayout/test'
+    | '/post/$postId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PostRouteRoute: typeof PostRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   HelloRoute: typeof HelloRoute
   PppRoute: typeof PppRoute
@@ -188,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/post': {
+      id: '/post'
+      path: '/post'
+      fullPath: '/post'
+      preLoaderRoute: typeof PostRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -232,11 +285,62 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LocaleAboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/post/_postPathlessLayout': {
+      id: '/post/_postPathlessLayout'
+      path: ''
+      fullPath: '/post'
+      preLoaderRoute: typeof PostPostPathlessLayoutRouteRouteImport
+      parentRoute: typeof PostRouteRoute
+    }
+    '/post/$postId/': {
+      id: '/post/$postId/'
+      path: '/$postId'
+      fullPath: '/post/$postId'
+      preLoaderRoute: typeof PostPostIdIndexRouteImport
+      parentRoute: typeof PostRouteRoute
+    }
+    '/post/_postPathlessLayout/test': {
+      id: '/post/_postPathlessLayout/test'
+      path: '/test'
+      fullPath: '/post/test'
+      preLoaderRoute: typeof PostPostPathlessLayoutTestRouteImport
+      parentRoute: typeof PostPostPathlessLayoutRouteRoute
+    }
   }
 }
 
+interface PostPostPathlessLayoutRouteRouteChildren {
+  PostPostPathlessLayoutTestRoute: typeof PostPostPathlessLayoutTestRoute
+}
+
+const PostPostPathlessLayoutRouteRouteChildren: PostPostPathlessLayoutRouteRouteChildren =
+  {
+    PostPostPathlessLayoutTestRoute: PostPostPathlessLayoutTestRoute,
+  }
+
+const PostPostPathlessLayoutRouteRouteWithChildren =
+  PostPostPathlessLayoutRouteRoute._addFileChildren(
+    PostPostPathlessLayoutRouteRouteChildren,
+  )
+
+interface PostRouteRouteChildren {
+  PostPostPathlessLayoutRouteRoute: typeof PostPostPathlessLayoutRouteRouteWithChildren
+  PostPostIdIndexRoute: typeof PostPostIdIndexRoute
+}
+
+const PostRouteRouteChildren: PostRouteRouteChildren = {
+  PostPostPathlessLayoutRouteRoute:
+    PostPostPathlessLayoutRouteRouteWithChildren,
+  PostPostIdIndexRoute: PostPostIdIndexRoute,
+}
+
+const PostRouteRouteWithChildren = PostRouteRoute._addFileChildren(
+  PostRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PostRouteRoute: PostRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   HelloRoute: HelloRoute,
   PppRoute: PppRoute,
