@@ -5,6 +5,16 @@ import { useAllRoutes } from '@/hooks/use-all-routes';
 
 export const Route = createRootRoute({
   component: RootLayout,
+  beforeLoad: () => {
+    // fetching user
+
+    return {
+      user: {
+        id: '123',
+        name: 'Krix',
+      },
+    };
+  },
 });
 
 function RootLayout() {

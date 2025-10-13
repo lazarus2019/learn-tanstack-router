@@ -27,6 +27,7 @@ Flat routes (flat all components):
 - routes/files.$.tsx => files/(dynamic)
 
 Path Normalized
+
 - about, /about, about/, /about/ => about
 - $, /$, $/, /$/ => $
 
@@ -273,12 +274,410 @@ const filesRoute = createRoute({
 const pathlessLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'pathlessLayout',
-})
+});
 
 // route-a
 const pathlessLayoutARoute = createRoute({
   getParentRoute: () => pathlessLayoutRoute,
   path: 'route-a',
-})
+});
 ```
+
 Main concepts same as file-based routing. See more here: https://tanstack.com/router/latest/docs/framework/react/routing/code-based-routing#routing-concepts-for-code-based-routing
+
+## File Naming Conventions
+
+## Router Context
+
+- Dependency Injection: supply dependencies (loader, data fetching client, mutation service) once and all child routes can access and use
+- Breadcrumbs: parent context can access inside child routes cause it merged by each layers. Child route can override context itself and using for breadcrumb.
+- Dynamic meta tag management: attach meta tags for each route's context like breadcrumb => dynamic page meta tags
+
+### Typed Router Context (type-safe for router context)
+
+- Use `createRootRouteWithContext<ContextType>({routeOptions})` instead of `createRootRoute({routeOptions})`
+
+```typescript
+import {
+  createRootRouteWithContext,
+  createRouter,
+} from '@tanstack/react-router';
+
+interface MyRouterContext {
+  user: User;
+}
+
+// Use the routerContext to create your root route
+const rootRoute = createRootRouteWithContext<MyRouterContext>()({
+  component: App,
+});
+
+const routeTree = rootRoute.addChildren([
+  // ...
+]);
+
+// Use the routerContext to create your router
+const router = createRouter({
+  routeTree,
+});
+```
+
+### Passing the initial Router Context
+
+- Passing prop context at instantiation time through `createRouter`
+- Context have required properties => type error
+- All Context properties are optional => default context is `{}`
+- Invalidate context state through `useRouter()` => recompute context for all routes
+
+```typescript
+import { createRouter } from '@tanstack/react-router';
+
+// Use the routerContext you created to create your router
+const router = createRouter({
+  routeTree,
+  context: {
+    user: {
+      id: '123',
+      name: 'John Doe',
+    },
+  },
+});
+```
+
+```typescript
+const useAuth = () => {
+  const router = useRouter();
+
+  useEffect(() => {
+    if (shouldInvalidate) {
+      router.invalidate();
+    }
+  }, []);
+};
+```
+
+### Using the Router Context
+
+- Access from route definitions through `loader` and `beforeLoad` (`beforeLoad` run before `loader`)
+- High recommended inject data fetching & mutation implement in context
+- Add external library like tanstack query
+
+```typescript
+const fetchTodosByUserId = async ({ userId }) => {
+  const response = await fetch(`/api/todos?userId=${userId}`);
+  const data = await response.json();
+  return data;
+};
+
+const queryClient = new QueryClient({});
+
+const router = createRouter({
+  routeTree: rootRoute,
+  context: {
+    userId: '123',
+    fetchTodosByUserId,
+    queryClient, // add external library
+  },
+});
+
+// src/routes/todos.tsx
+export const Route = createFileRoute('/todos')({
+  component: Todos,
+  loader: ({ context }) => context.fetchTodosByUserId(context.userId), // access context
+  beforeLoad: ({ context }) => {
+    // access & modified context
+    console.log(context);
+    context.queryClient.ensureQueryData({});
+    return {
+      // parent context will be spreads here
+      newProp: 'hello world', // additional context
+    };
+  },
+});
+```
+
+### Use with React Context/Hooks
+
+- Can't use React Context & Hooks inside `beforeLoad` and `loader` cause **Rules of Hooks** => router context
+- Can passing context before `<RouterProvider>` is render => React-land, satisfy **Rules of Hooks**
+
+```tsx
+// src/routes/__root.tsx
+// First, make sure the context for the root route is typed
+import { createRootRouteWithContext } from '@tanstack/react-router';
+import { useNetworkStrength } from '@/hooks/useNetworkStrength';
+
+interface MyRouterContext {
+  networkStrength: ReturnType<typeof useNetworkStrength>;
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  component: App,
+});
+
+// src/router.tsx
+import { createRouter } from '@tanstack/react-router';
+
+import { routeTree } from './routeTree.gen';
+
+export const router = createRouter({
+  routeTree,
+  context: {
+    networkStrength: undefined!, // We'll set this in React-land
+  },
+});
+
+// src/main.tsx
+import { RouterProvider } from '@tanstack/react-router';
+import { router } from './router';
+
+import { useNetworkStrength } from '@/hooks/useNetworkStrength';
+
+function App() {
+  const networkStrength = useNetworkStrength();
+  // Inject the returned value from the hook into the router context
+  return <RouterProvider router={router} context={{ networkStrength }} />;
+}
+
+// src/routes/posts.tsx
+import { createFileRoute } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/posts')({
+  component: Posts,
+  loader: ({ context }) => {
+    if (context.networkStrength === 'STRONG') {
+      // Do something
+    }
+  },
+});
+```
+
+### Modified the Router Context
+
+- Child routes receive merged context from it parent
+- Child routes available override the parent context => it's child routes will receive the override
+
+```typescript
+// src/routes/__root.tsx
+import { createRootRouteWithContext } from '@tanstack/react-router';
+interface MyRouterContext {
+  foo: boolean;
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  component: App,
+});
+
+// src/router.tsx
+import { createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+
+const router = createRouter({
+  routeTree,
+  context: {
+    foo: true,
+  },
+});
+
+// src/routes/todos.tsx
+import { createFileRoute } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/todos')({
+  component: Todos,
+  beforeLoad: () => {
+    return {
+      bar: true,
+    };
+  },
+  loader: ({ context }) => {
+    context.foo; // true
+    context.bar; // true
+  },
+});
+```
+
+### Processing Accumulated Route Context
+
+- Cause each child route can override the context => dynamic data per page data
+
+```typescript
+// src/routes/__root
+export const Route = createFileRoute('/app/content')({
+  beforeLoad: () => {
+    return {
+      getTitle: () => 'Content Page',
+    };
+  },
+  component: SettingsPage,
+});
+
+// src/routes/__root
+export const Route = createRootRoute({
+  component: () => {
+    const matches = useRouterState({ select: (s) => s.matches });
+    // access src/routes/__root/content/$contentId.tsx => matches = [__root, content, $contentId]
+
+    const breadcrumbs = matches
+      .filter((match) => match.context.getTitle)
+      .map(({ pathname, context }) => {
+        return {
+          title: context.getTitle() ?? 'My App',
+          path: pathname,
+        };
+      });
+  },
+});
+```
+
+## Not Found Errors
+
+- See document here: https://tanstack.com/router/latest/docs/framework/react/guide/not-found-errors
+
+## Authenticated Routes
+
+- `beforeLoad` run before `loader`, those functions receive same arguments
+- `beforeLoad` run before any it's child routes => middleware before load child routes
+- `beforeLoad` throw error => not loading children
+- `beforeLoad` run in relative orders to these other route loading functions:
+  - Route Matching (Top-Down) (make sure URL valid)
+    - `route.params.parse`
+    - `route.validateSearch`
+  - Route Loading (include Preloading)qqqqqqqqqqqqqqqqqqqqqqqq
+    - `route.beforeLoad`q
+    - `route.onError`
+  - Route Loading (parallel) (preload component, fetch data)
+    - `route.component.preload?`
+    - `route.load`
+
+### Redirecting
+
+- Redirecting to login page with `throw a redirect()`
+
+```typescript
+// src/routes/_authenticated.tsx
+export const Route = createFileRoute('/_authenticated')({
+  beforeLoad: async ({ location }) => {
+    if (!isAuthenticated()) {
+      throw redirect({
+        to: '/login',
+        search: {
+          // Use the current location to power a redirect after login
+          // (Do not use `router.state.resolvedLocation` as it can
+          // potentially lag behind the actual current location)
+          redirect: location.href,
+        },
+        // replace: true // replace current history instead of add new one
+      });
+    }
+  },
+});
+```
+
+### Non-Redirecting Authentication
+
+- Render other component instead of redirect, keep user on same page
+
+```tsx
+// src/routes/_authenticated.tsx
+export const Route = createFileRoute('/_authenticated')({
+  component: () => {
+    if (!isAuthenticated()) {
+      return <Login />;
+    }
+
+    return <Outlet />;
+  },
+});
+```
+
+### Authentication using React Context/Hooks
+
+- Passing `auth` information to router context
+- Access context from `beforeLoad` and checking to redirecting to Login route
+
+```tsx
+// src/routes/__root.tsx
+import { createRootRouteWithContext } from '@tanstack/react-router';
+interface MyRouterContext {
+  // The ReturnType of your useAuth hook or the value of your AuthContext
+  auth: AuthState;
+}
+
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  component: () => <Outlet />,
+});
+
+// src/router.tsx
+import { createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+
+export const router = createRouter({
+  routeTree,
+  context: {
+    // auth will initially be undefined
+    // We'll be passing down the auth state from within a React component
+    auth: undefined!,
+  },
+});
+
+// src/App.tsx
+import { RouterProvider } from '@tanstack/react-router';
+import { AuthProvider, useAuth } from './auth';
+import { router } from './router';
+
+function InnerApp() {
+  const auth = useAuth();
+  return <RouterProvider router={router} context={{ auth }} />;
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <InnerApp />
+    </AuthProvider>
+  );
+}
+
+// src/routes/dashboard.route.tsx
+import { createFileRoute, redirect } from '@tanstack/react-router';
+
+export const Route = createFileRoute('/dashboard')({
+  beforeLoad: ({ context, location }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({
+        to: '/login',
+        search: {
+          redirect: location.href,
+        },
+      });
+    }
+  },
+});
+```
+
+### Related How-To Guides
+
+For detailed, step-by-step implementation guides, see:
+
+- [How to Set Up Basic Authentication](https://tanstack.com/router/latest/docs/framework/react/how-to/setup-authentication) - Complete setup with React Context and protected routes
+- [How to Integrate Authentication Providers](https://tanstack.com/router/latest/docs/framework/react/how-to/setup-auth-providers) - Use Auth0, Clerk, or Supabase
+- [How to Set Up Role-Based Access Control](https://tanstack.com/router/latest/docs/framework/react/how-to/setup-rbac) - Implement permissions and role-based routing
+
+### Examples
+
+Working authentication examples are available in the repository:
+
+- [Basic Authentication Example](https://github.com/TanStack/router/tree/main/examples/react/authenticated-routes) - Simple authentication with context
+- [Firebase Authentication](https://github.com/TanStack/router/tree/main/examples/react/authenticated-routes-firebase) - Firebase Auth integration
+- [TanStack Start Auth Examples](https://github.com/TanStack/router/tree/main/examples/react) - Various auth implementations with TanStack Start
+
+## Render Optimizations
+
+- Optimize ensure components only re-render when necessary
+
+### structure sharing
+
+### fine-grained selectors
+
+### structural shading with fine-grained selectors
+

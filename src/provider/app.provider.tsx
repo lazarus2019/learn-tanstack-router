@@ -6,7 +6,9 @@ export const AppProvider = ({ children }: PropsWithChildren) => {
   return (
     <>
       {children}
-      <RouterProvider router={router} />
+      <RouterProvider router={router} context={{
+        
+      }} />
     </>
   );
 };
