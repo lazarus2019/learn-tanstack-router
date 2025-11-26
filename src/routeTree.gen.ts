@@ -18,9 +18,10 @@ import { Route as ContentRouteRouteImport } from './routes/content/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PostsIndexRouteImport } from './routes/posts.index'
 import { Route as ContentIndexRouteImport } from './routes/content/index'
+import { Route as TestingRedirectSsoWithReplaceRouteImport } from './routes/testing/redirect-sso-with-replace'
+import { Route as TestingRedirectSsoWithLocationHrefRouteImport } from './routes/testing/redirect-sso-with-location-href'
 import { Route as PostsDetailRouteImport } from './routes/posts.detail'
 import { Route as ContentContentIdRouteImport } from './routes/content/$contentId'
-import { Route as LocaleAboutRouteImport } from './routes/$locale/about'
 import { Route as PostPostPathlessLayoutRouteRouteImport } from './routes/post/_postPathlessLayout/route'
 import { Route as PostPostIdIndexRouteImport } from './routes/post/$postId/index'
 import { Route as PostPostPathlessLayoutTestRouteImport } from './routes/post/_postPathlessLayout/test'
@@ -70,6 +71,18 @@ const ContentIndexRoute = ContentIndexRouteImport.update({
   path: '/',
   getParentRoute: () => ContentRouteRoute,
 } as any)
+const TestingRedirectSsoWithReplaceRoute =
+  TestingRedirectSsoWithReplaceRouteImport.update({
+    id: '/testing/redirect-sso-with-replace',
+    path: '/testing/redirect-sso-with-replace',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const TestingRedirectSsoWithLocationHrefRoute =
+  TestingRedirectSsoWithLocationHrefRouteImport.update({
+    id: '/testing/redirect-sso-with-location-href',
+    path: '/testing/redirect-sso-with-location-href',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PostsDetailRoute = PostsDetailRouteImport.update({
   id: '/posts/detail',
   path: '/posts/detail',
@@ -79,11 +92,6 @@ const ContentContentIdRoute = ContentContentIdRouteImport.update({
   id: '/$contentId',
   path: '/$contentId',
   getParentRoute: () => ContentRouteRoute,
-} as any)
-const LocaleAboutRoute = LocaleAboutRouteImport.update({
-  id: '/$locale/about',
-  path: '/$locale/about',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const PostPostPathlessLayoutRouteRoute =
   PostPostPathlessLayoutRouteRouteImport.update({
@@ -110,9 +118,10 @@ export interface FileRoutesByFullPath {
   '/hello': typeof HelloRoute
   '/ppp': typeof PppRoute
   '/test': typeof TestRoute
-  '/$locale/about': typeof LocaleAboutRoute
   '/content/$contentId': typeof ContentContentIdRoute
   '/posts/detail': typeof PostsDetailRoute
+  '/testing/redirect-sso-with-location-href': typeof TestingRedirectSsoWithLocationHrefRoute
+  '/testing/redirect-sso-with-replace': typeof TestingRedirectSsoWithReplaceRoute
   '/content/': typeof ContentIndexRoute
   '/posts': typeof PostsIndexRoute
   '/post/test': typeof PostPostPathlessLayoutTestRoute
@@ -125,9 +134,10 @@ export interface FileRoutesByTo {
   '/hello': typeof HelloRoute
   '/ppp': typeof PppRoute
   '/test': typeof TestRoute
-  '/$locale/about': typeof LocaleAboutRoute
   '/content/$contentId': typeof ContentContentIdRoute
   '/posts/detail': typeof PostsDetailRoute
+  '/testing/redirect-sso-with-location-href': typeof TestingRedirectSsoWithLocationHrefRoute
+  '/testing/redirect-sso-with-replace': typeof TestingRedirectSsoWithReplaceRoute
   '/content': typeof ContentIndexRoute
   '/posts': typeof PostsIndexRoute
   '/post/test': typeof PostPostPathlessLayoutTestRoute
@@ -143,9 +153,10 @@ export interface FileRoutesById {
   '/ppp': typeof PppRoute
   '/test': typeof TestRoute
   '/post/_postPathlessLayout': typeof PostPostPathlessLayoutRouteRouteWithChildren
-  '/$locale/about': typeof LocaleAboutRoute
   '/content/$contentId': typeof ContentContentIdRoute
   '/posts/detail': typeof PostsDetailRoute
+  '/testing/redirect-sso-with-location-href': typeof TestingRedirectSsoWithLocationHrefRoute
+  '/testing/redirect-sso-with-replace': typeof TestingRedirectSsoWithReplaceRoute
   '/content/': typeof ContentIndexRoute
   '/posts/': typeof PostsIndexRoute
   '/post/_postPathlessLayout/test': typeof PostPostPathlessLayoutTestRoute
@@ -161,9 +172,10 @@ export interface FileRouteTypes {
     | '/hello'
     | '/ppp'
     | '/test'
-    | '/$locale/about'
     | '/content/$contentId'
     | '/posts/detail'
+    | '/testing/redirect-sso-with-location-href'
+    | '/testing/redirect-sso-with-replace'
     | '/content/'
     | '/posts'
     | '/post/test'
@@ -176,9 +188,10 @@ export interface FileRouteTypes {
     | '/hello'
     | '/ppp'
     | '/test'
-    | '/$locale/about'
     | '/content/$contentId'
     | '/posts/detail'
+    | '/testing/redirect-sso-with-location-href'
+    | '/testing/redirect-sso-with-replace'
     | '/content'
     | '/posts'
     | '/post/test'
@@ -193,9 +206,10 @@ export interface FileRouteTypes {
     | '/ppp'
     | '/test'
     | '/post/_postPathlessLayout'
-    | '/$locale/about'
     | '/content/$contentId'
     | '/posts/detail'
+    | '/testing/redirect-sso-with-location-href'
+    | '/testing/redirect-sso-with-replace'
     | '/content/'
     | '/posts/'
     | '/post/_postPathlessLayout/test'
@@ -210,8 +224,9 @@ export interface RootRouteChildren {
   HelloRoute: typeof HelloRoute
   PppRoute: typeof PppRoute
   TestRoute: typeof TestRoute
-  LocaleAboutRoute: typeof LocaleAboutRoute
   PostsDetailRoute: typeof PostsDetailRoute
+  TestingRedirectSsoWithLocationHrefRoute: typeof TestingRedirectSsoWithLocationHrefRoute
+  TestingRedirectSsoWithReplaceRoute: typeof TestingRedirectSsoWithReplaceRoute
   PostsIndexRoute: typeof PostsIndexRoute
 }
 
@@ -280,6 +295,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContentIndexRouteImport
       parentRoute: typeof ContentRouteRoute
     }
+    '/testing/redirect-sso-with-replace': {
+      id: '/testing/redirect-sso-with-replace'
+      path: '/testing/redirect-sso-with-replace'
+      fullPath: '/testing/redirect-sso-with-replace'
+      preLoaderRoute: typeof TestingRedirectSsoWithReplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/testing/redirect-sso-with-location-href': {
+      id: '/testing/redirect-sso-with-location-href'
+      path: '/testing/redirect-sso-with-location-href'
+      fullPath: '/testing/redirect-sso-with-location-href'
+      preLoaderRoute: typeof TestingRedirectSsoWithLocationHrefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/posts/detail': {
       id: '/posts/detail'
       path: '/posts/detail'
@@ -293,13 +322,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/content/$contentId'
       preLoaderRoute: typeof ContentContentIdRouteImport
       parentRoute: typeof ContentRouteRoute
-    }
-    '/$locale/about': {
-      id: '/$locale/about'
-      path: '/$locale/about'
-      fullPath: '/$locale/about'
-      preLoaderRoute: typeof LocaleAboutRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/post/_postPathlessLayout': {
       id: '/post/_postPathlessLayout'
@@ -376,8 +398,10 @@ const rootRouteChildren: RootRouteChildren = {
   HelloRoute: HelloRoute,
   PppRoute: PppRoute,
   TestRoute: TestRoute,
-  LocaleAboutRoute: LocaleAboutRoute,
   PostsDetailRoute: PostsDetailRoute,
+  TestingRedirectSsoWithLocationHrefRoute:
+    TestingRedirectSsoWithLocationHrefRoute,
+  TestingRedirectSsoWithReplaceRoute: TestingRedirectSsoWithReplaceRoute,
   PostsIndexRoute: PostsIndexRoute,
 }
 export const routeTree = rootRouteImport

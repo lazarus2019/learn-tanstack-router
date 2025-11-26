@@ -1,27 +1,44 @@
-import * as React from 'react';
-import { Link, Outlet, createRootRoute } from '@tanstack/react-router';
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 import { useAllRoutes } from '@/hooks/use-all-routes';
+import type { AuthState } from '@/provider/auth.provider';
+import {
+  Link,
+  Outlet,
+  createRootRouteWithContext,
+} from '@tanstack/react-router';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
+import * as React from 'react';
 
-export const Route = createRootRoute({
+export const Route = createRootRouteWithContext<AuthState>()({
   component: RootLayout,
-  beforeLoad: () => {
-    // fetching user
+  // beforeLoad: () => {
+  //   // fetching user
 
-    return {
-      user: {
-        id: '123',
-        name: 'Krix',
-      },
-    };
-  },
+  //   return {
+  //     user: {
+  //       id: '123',
+  //       name: 'Krix',
+  //     },
+  //   };
+  // },
 });
 
 function RootLayout() {
   const routes = useAllRoutes();
 
+  const handleLogin = async () => {
+    const redirectUrl = await new Promise<string>((resolve) => {
+      setTimeout(() => {
+        resolve('https://vercel.com/');
+      }, 2000);
+    });
+
+    globalThis.location.href = redirectUrl;
+  };
+
   return (
     <React.Fragment>
+      <button onClick={handleLogin}>login</button>
+
       <div>Hello "__root"!</div>
       <ul className="list-disc pl-5 space-y-1">
         {routes.map(({ originalPath, filledPath }) => (
