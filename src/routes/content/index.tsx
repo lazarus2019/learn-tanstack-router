@@ -6,12 +6,19 @@ export const Route = createFileRoute('/content/')({
 
 function RouteComponent() {
   return (
-    <div>
-      Hello "/content/"!
-      <Button variant="outline">Button</Button>
+    <>
+      <span> Hello "/content/"!</span>
+      {/* <Button variant="outline">Button</Button>
       <Button variant="outline" size="icon" aria-label="Submit">
         ArrowUpIcon
       </Button>
-    </div>
+      <video src="https://www.pexels.com/vi-vn/download/video/4115420/" />
+      <video src="https://www.pexels.com/vi-vn/download/video/34722109/" />
+      <video src="https://www.pexels.com/vi-vn/download/video/34762062/" />
+      <video src="https://www.pexels.com/vi-vn/download/video/28645772/" />
+      <video src="https://www.pexels.com/vi-vn/download/video/4115420/" />
+      <video src="https://www.pexels.com/vi-vn/download/video/4115420/" />
+      <video src="https://www.pexels.com/vi-vn/download/video/4115420/" /> */}
+    </>
   );
 }

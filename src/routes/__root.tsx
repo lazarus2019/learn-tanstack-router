@@ -39,6 +39,49 @@ function RootLayout() {
     <React.Fragment>
       <button onClick={handleLogin}>login</button>
 
+      <div
+        style={{
+          maxWidth: '800px',
+          width: '100%',
+          marginInline: 'auto',
+          marginBottom: '20px',
+        }}
+      >
+        <div
+          style={{
+            textAlign: 'left',
+          }}
+        >
+          Lorem ipsum dolor sit amet consectetur, adipisicing elit. Id nobis
+          maiores reiciendis eveniet expedita eius modi maxime dolores, officiis
+          consequuntur.
+          <div
+            style={{
+              paddingBottom: '56.25%',
+              height: '0px',
+              position: 'relative',
+              overflow: 'hidden',
+              maxWidth: '100%',
+            }}
+          >
+            <iframe
+              style={{
+                position: 'absolute',
+                top: '0',
+                left: '0',
+                maxWidth: '100%',
+                maxHeight: '100%',
+                aspectRatio: '16 / 9',
+              }}
+              allowfullscreen
+              frameborder="0"
+              src="https://www.youtube.com/embed/rsdYhDphRuk"
+              title="[UPDATE] 더 나은 플레이를 위한 한 걸음 | 넥슨 11월 업데이트 안내"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+
       <div>Hello "__root"!</div>
       <ul className="list-disc pl-5 space-y-1">
         {routes.map(({ originalPath, filledPath }) => (
