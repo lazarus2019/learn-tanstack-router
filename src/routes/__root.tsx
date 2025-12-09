@@ -50,6 +50,7 @@ function RootLayout() {
         <div
           style={{
             textAlign: 'left',
+            backgroundColor: '#eee',
           }}
         >
           Lorem ipsum dolor sit amet consectetur, adipisicing elit. Id nobis
