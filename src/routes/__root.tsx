@@ -61,7 +61,7 @@ function RootLayout() {
               height: '0px',
               position: 'relative',
               overflow: 'hidden',
-              maxWidth: '100%',
+              width: '100%',
             }}
           >
             <iframe
